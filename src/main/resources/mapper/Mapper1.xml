@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace：命名空间，用于隔离sql,
+命名空间 user.findUserById
+-->
+<mapper namespace="mapper.roleMapper">
+    <cache/>
+    <!-- 通过ID查询一个用户
+     id名字，namespace+id用来定位具体的sql   parameterType：参数类型   resultType：返回值，如果bean与数据库一一对应，则会自动映射   where id=#{v}，#{} 占位符，里面要写一个任意字符
+    -->
+    <select id="findUserById" parameterType="Integer" resultType="student">
+        select * from student where id=#{v}
+    </select>
+    <select id="findUserByName"  parameterType="string" resultMap="roleMap">
+        select id,name from student where  name like concat('%',#{name,javaType=string,jdbcType=VARCHAR},'%')
+    </select>
+    <resultMap id="roleMap" type="student">
+        <id column="id" property="id" jdbcType="INTEGER" javaType="int"/>
+        <result column="name" property="name" javaType="string" jdbcType="VARCHAR"/>
+        <result column="birthday" property="birthday"/>
+    </resultMap>
+     <update id="update" >
+        update student set name=#{name1,javaType=string,jdbcType=VARCHAR},sex=${sex} where id=#{id}
+    </update>
+    <insert id="addInsert" parameterType="student"  >
+<selectKey keyProperty="id" order="BEFORE" resultType="int">
+      select LAST_INSERT_ID()
+</selectKey>
+        insert into student(name,sex) VALUES (#{name},#{sex})
+    </insert>
+
+    <resultMap id="fdsa" type="student">
+
+    </resultMap>
+    <insert id="insertCus"  parameterType="customer">
+        <selectKey keyProperty="id" order="BEFORE" resultType="int">
+            SELECT if(max(id) is null,1,max(id)+2) as newId from customer
+        </selectKey>
+        insert into customer(id,name) values(#{id},#{name});
+
+    </insert>
+<resultMap id="resultMap2" type="pojo.TStudentSelfCard">
+    <id column="id1" property="id1"/>
+    <result column="student_id" property="studentId"/>
+    <result column="native" property="native1"/>
+    <result column="note" property="note"/>
+</resultMap>
+
+    <select id="selectIdd" parameterType="map" resultMap="resultMap2">
+        select id1,student_id,native,note from t_student_selfcard where id1=#{id}
+    </select>
+
+    <resultMap id="resultMap1" type="pojo.TStudent">
+        <id property="id2" column="id2"/>
+        <result property="cname" column="cname"/>
+        <result property="selfcardNo" column="selfcart_no"/>
+        <result property="note" column="note"/>
+        <association property="tStudentSelfCard" column="{id=id2}"  select="selectIdd" >
+
+        </association>
+    </resultMap>
+
+    <select id="selectId" useCache="false" parameterType="int" resultMap="resultMap1" >
+
+        select id2,cname,selfcart_no,note from t_student
+        where id2=#{id1}
+         <!--<where>-->
+             <!--<if test="id1 !=''">  and id2=#{id1}</if>-->
+            <!--</where>-->
+    </select>
+
+    <select id="selectStu" parameterType="hashmap" resultType="pojo.Student">
+      select *from student where id in
+      <!--<foreach collection="list" item="item" index="index"  open="(" separator="," close=")">-->
+          <!--#{item}-->
+      <!--</foreach>-->
+
+        <foreach collection="ids" index="index" item="item" open="(" separator="," close=")">
+                            #{item}
+                  </foreach>
+    </select>
+</mapper>
